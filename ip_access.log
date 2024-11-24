@@ -1,0 +1,27 @@
+2024-11-23T14:46:13.221Z - IP: 127.0.0.1 - Method: GET - Status: ACCEPTED
+2024-11-23T14:59:33.563Z - IP: 127.0.0.1 - Method: GET - Status: ACCEPTED
+2024-11-23T15:03:12.554Z - IP: 127.0.0.1 - Method: POST - Status: ACCEPTED
+2024-11-23T15:11:08.078Z - IP: 127.0.0.1 - Method: COMM - Status: 200
+2024-11-23T15:20:35.661Z - IP: 127.0.0.1 - Method: COMM :: Hi how are you - Status: 200
+2024-11-23T15:20:51.609Z - IP: 127.0.0.1 - Method: GET_LIST :: Done - Status: 200
+2024-11-23T15:21:08.596Z - IP: 127.0.0.1 - Method: GET :: /get.txt - Status: ACCEPTED
+2024-11-23T15:24:05.014Z - IP: 127.0.0.1 - Method: GET_LIST :: Done - Status: 200
+2024-11-23T15:29:18.360Z - IP: 127.0.0.1 - Method: GET_LIST :: Done - Status: 200
+2024-11-23T15:29:27.015Z - IP: 127.0.0.1 - Method: DELETE :: /Users/namra/Desktop/server/agh.jpg - Status: ACCEPTED
+2024-11-23T15:50:13.895Z - IP: 127.0.0.1 - Method: COMM :: Hi how are you - Status: 200
+2024-11-23T15:51:52.993Z - IP: 127.0.0.1 - Method: COMM :: hi how are you - Status: 200
+2024-11-23T15:51:58.601Z - IP: 127.0.0.1 - Method: GET_LIST :: Done - Status: 200
+2024-11-23T15:54:57.736Z - IP: 127.0.0.1 - Method: COMM :: hi how are you - Status: 200
+2024-11-23T16:01:15.800Z - IP: 127.0.0.1 - Method: COMM :: HI - Status: 200
+2024-11-23T16:01:19.620Z - IP: 127.0.0.1 - Method: COMM :: HI - Status: 200
+2024-11-23T16:01:26.769Z - IP: 127.0.0.1 - Method: GET :: /get.txt - Status: ACCEPTED
+2024-11-23T16:01:33.579Z - IP: 127.0.0.1 - Method: GET_INGO :: ** - Status: ACCEPTED
+2024-11-23T16:04:39.905Z - IP: 127.0.0.1 - Method: COMM :: HI how are you - Status: 200
+2024-11-23T16:04:44.910Z - IP: 127.0.0.1 - Method: COMM :: how are you - Status: 200
+2024-11-23T16:04:49.006Z - IP: 127.0.0.1 - Method: GET_LIST :: Done - Status: 200
+2024-11-23T16:04:55.353Z - IP: 127.0.0.1 - Method: GET :: /get.txt - Status: ACCEPTED
+2024-11-23T16:05:52.166Z - IP: 127.0.0.1 - Method: GET :: /pic.png - Status: ACCEPTED
+2024-11-23T16:05:58.661Z - IP: 127.0.0.1 - Method: GET :: /get.txt - Status: ACCEPTED
+2024-11-23T16:10:05.244Z - IP: 127.0.0.1 - Method: COMM :: hi how are you - Status: 200
+2024-11-23T16:10:13.852Z - IP: 127.0.0.1 - Method: GET :: /pic.png - Status: ACCEPTED
+2024-11-23T16:10:19.296Z - IP: 127.0.0.1 - Method: GET :: /get.txt - Status: ACCEPTED
