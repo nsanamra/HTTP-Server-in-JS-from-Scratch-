@@ -11,12 +11,14 @@ const server = net.createServer((socket) => {
     let headersParsed = false;
 
     socket.on("data", (data) => {
+        buffer = Buffer.concat([buffer, data]);
         const dataStr = data.toString();
         
         // Handle COMM command
         if (dataStr.trim().startsWith('COMM')) {
             const message = dataStr.trim().substring(4).trim();
             handleCommMethod(socket, message);
+            buffer = Buffer.alloc(0);
             return;
         }
 
@@ -37,19 +39,20 @@ const server = net.createServer((socket) => {
                     console.error("Write error : ", err);
                 }
             });
+            buffer = Buffer.alloc(0);
             return;
         }
 
         // Handle GET_LIST
         if(dataStr.trim().startsWith('GET_LIST')){
             handleFileList(socket);
+            buffer = Buffer.alloc(0);
             return;
         }
         
         // Handle HTTP requests
         if (dataStr.startsWith('POST')) {
             isHttpRequest = true;
-            buffer = Buffer.concat([buffer, data]);
             
             // Only parse headers once
             if (!headersParsed) {
@@ -67,10 +70,10 @@ const server = net.createServer((socket) => {
             // Check if we have received the complete request
             if (headersParsed) {
                 const headerEndIndex = buffer.indexOf('\r\n\r\n');
-                const totalExpectedLength = headerEndIndex + 4 + expectedLength;
+                const bodyLength = buffer.length - (headerEndIndex + 4);
                 
-                if (buffer.length >= totalExpectedLength) {
-                    handleRequest(socket, buffer.slice(0, totalExpectedLength));
+                if (bodyLength >= expectedLength) {
+                    handleRequest(socket, buffer);
                     buffer = Buffer.alloc(0);
                     headersParsed = false;
                     expectedLength = -1;
@@ -79,23 +82,26 @@ const server = net.createServer((socket) => {
         } else if (dataStr.startsWith('GET')) {
             isHttpRequest = true;
             handleRequest(socket, data);
+            buffer = Buffer.alloc(0);
         } else if (dataStr.trim().startsWith('DELETE')){
-            isHttpRequest = true
+            isHttpRequest = true;
             const requestLine = dataStr.toString().split('\r\n')[0];
             const path = requestLine.split(' ')[1]; 
             handleDeleteMethod(socket, path);
+            buffer = Buffer.alloc(0);
         }
     });
 
     socket.on("end", () => {
-        if (isHttpRequest && buffer.length > 0 && headersParsed) {
+        if (isHttpRequest && buffer.length > 0) {
             handleRequest(socket, buffer);
         }
     });
 
-    socket.setTimeout(120000); // Increased timeout for large files
+    socket.setTimeout(120000); // 2 minutes timeout
     socket.on('timeout', () => {
         sendResponse(socket, 408, "Request timeout");
+        socket.end();
     });
 });
 
@@ -277,26 +283,9 @@ function handlePostMethod(socket, reqPath, data) {
             return;
         }
 
-        // Get headers as string
-        const headers = data.slice(0, headerEndIndex).toString();
+        // Extract the body after headers
+        const body = data.slice(headerEndIndex + 4);
         
-        // Get the Content-Length
-        const contentLengthMatch = headers.match(/Content-Length: (\d+)/i);
-        if (!contentLengthMatch) {
-            sendResponse(socket, 400, "Missing Content-Length header");
-            return;
-        }
-
-        const contentLength = parseInt(contentLengthMatch[1]);
-        
-        // Extract exactly contentLength bytes after the headers
-        const body = data.slice(headerEndIndex + 4, headerEndIndex + 4 + contentLength);
-        
-        if (body.length !== contentLength) {
-            sendResponse(socket, 400, `Incomplete upload: expected ${contentLength} bytes but got ${body.length} bytes`);
-            return;
-        }
-
         // Write the file
         fs.writeFile(targetFilePath, body, (err) => {
             if (err) {
