@@ -79,25 +79,6 @@ const server = net.createServer((socket) => {
     });
 });
 
-function rateLimiter(socket){
-    const ip = socket.remoteAddress;
-    const now = Date.now();
-    
-    if (!rateLimits[ip]) {
-        rateLimits[ip] = [];
-    }
-    
-    // Clean up requests older than 60 seconds
-    rateLimits[ip] = rateLimits[ip].filter(timestamp => now - timestamp < 60000);
-    
-    if (rateLimits[ip].length >= 100) {
-        // Limit exceeded
-        return false; // Deny the request
-    }
-    
-    rateLimits[ip].push(now); // Record the timestamp of the current request
-    return true; // Allow the request
-}
 
 function validatePath(filePath) {
     const homeDir = os.homedir();
@@ -241,18 +222,17 @@ function handleGetMethod(socket, reqPath) {
                 return;
             }
 
-            fs.writeFile(targetFilePath, data, (err) => {
-                if (err) {
-                    console.error('File write error:', err);
-                    if (socket.writable) {
-                        sendResponse(socket, 500, "Error saving file");
-                    }
-                    return;
-                }
-                if (socket.writable) {
-                    sendResponse(socket, 200, `File successfully saved to ${targetFilePath}`);
-                }
-            });
+            //Send the file as a response
+            const responseHeaders = `HTTP/1.1 200 OK\r\n` +
+                `Content-Type: application/octet-stream\r\n` +
+                `Content-Disposition: attachment; filename="${path.basename(reqPath)}"\r\n` +
+                `Content-Length: ${data.length}\r\n` +
+                `Connection: close\r\n\r\n`;
+
+            // Write headers and file data to the socket
+            socket.write(responseHeaders);
+            socket.write(data);
+            sendResponse(socket, 200, `File successfully saved to ${targetFilePath}`);
         });
     } catch (error) {
         console.error('GET handling error:', error);
@@ -261,6 +241,46 @@ function handleGetMethod(socket, reqPath) {
         }
     }
 }
+
+// function handleGetMethod(socket, reqPath) {
+//     try {
+//         const sourceFilePath = path.join('.', reqPath);
+
+//         // Check if the file exists
+//         if (!fs.existsSync(sourceFilePath)) {
+//             sendResponse(socket, 404, "Source file not found");
+//             return;
+//         }
+
+//         // Read the file and send its content directly to the client
+//         fs.readFile(sourceFilePath, (err, data) => {
+//             if (err) {
+//                 console.error('File read error:', err);
+//                 if (socket.writable) {
+//                     sendResponse(socket, 500, "Error reading file");
+//                 }
+//                 return;
+//             }
+
+//             // Send the file as a response
+//             const responseHeaders = `HTTP/1.1 200 OK\r\n` +
+//                 `Content-Type: application/octet-stream\r\n` +
+//                 `Content-Disposition: attachment; filename="${path.basename(reqPath)}"\r\n` +
+//                 `Content-Length: ${data.length}\r\n` +
+//                 `Connection: close\r\n\r\n`;
+
+//             // Write headers and file data to the socket
+//             socket.write(responseHeaders);
+//             socket.write(data);
+//         });
+//     } catch (error) {
+//         console.error('GET handling error:', error);
+//         if (socket.writable) {
+//             sendResponse(socket, 500, "Internal server error");
+//         }
+//     }
+// }
+
 
 function handlePostMethod(socket, reqPath, data) {
     try {
@@ -316,10 +336,7 @@ function handlePostMethod(socket, reqPath, data) {
     }
 }
 
-function saveBinaryFile(saveFilePath, data, callback) {
-    // Write the binary data directly without encoding
-    fs.writeFile(saveFilePath, data, callback);
-}
+
 
 function handleDeleteMethod(socket, reqPath) {
     try {

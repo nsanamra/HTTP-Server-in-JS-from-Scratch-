@@ -1,6 +1,8 @@
 const net = require('net');
 const fs = require('fs');
 const os = require('os');
+const path = require('path');
+
 
 // Creating a server
 const server = net.createServer((socket) => {
@@ -50,26 +52,57 @@ function handleCommMethod(socket, message) {
 // telnet localhost 9999
 // GET /path/to/file.extension
 // GET Method: Read and Save file to the home directory
-function handleGetMethod(socket, reqPath) {
-    const filePath = `.${reqPath}`; // Path to the requested file
-    const homeDir = os.homedir();   // Get the home directory
-    const saveFilePath = `${homeDir}${reqPath}`; // Path to save the file in the home directory
+// function handleGetMethod(socket, reqPath) {
+//     const filePath = `.${reqPath}`; // Path to the requested file
+//     const homeDir = os.homedir();   // Get the home directory
+//     const saveFilePath = `${homeDir}${reqPath}`; // Path to save the file in the home directory
 
-    fs.readFile(filePath, (err, data) => {
-        if (err) {
-            sendResponse(socket, 404, "File not found");
-        } else {
-            // Save the file to the home directory
-            fs.writeFile(saveFilePath, data, (err) => {
-                if (err) {
-                    sendResponse(socket, 500, "Error saving file");
-                } else {
-                    sendResponse(socket, 200, "File read and saved to home directory", 'text/html');
-                }
-            });
+//     fs.readFile(filePath, (err, data) => {
+//         if (err) {
+//             sendResponse(socket, 404, "File not found");
+//         } else {
+//             // Save the file to the home directory
+//             fs.writeFile(saveFilePath, data, (err) => {
+//                 if (err) {
+//                     sendResponse(socket, 500, "Error saving file");
+//                 } else {
+//                     sendResponse(socket, 200, "File read and saved to home directory", 'text/html');
+//                 }
+//             });
+//         }
+//     });
+// }
+
+function handleGetMethod(socket, reqPath) {
+    try {
+        const sourceFilePath = path.join('.', reqPath);
+
+        // Check if the file exists
+        if (!fs.existsSync(sourceFilePath)) {
+            socket.write("File not found\n");
+            socket.end();
+            return;
         }
-    });
+
+        // Read the file and send its content
+        fs.readFile(sourceFilePath, (err, data) => {
+            if (err) {
+                socket.write("Error reading file\n");
+                socket.end();
+                return;
+            }
+
+            // Send the file content directly
+            socket.write(data);
+            socket.end();
+        });
+    } catch (error) {
+        console.error('Error handling GET request:', error);
+        socket.write("Internal server error\n");
+        socket.end();
+    }
 }
+
 
 // curl --data-binary @/path/to/file.extension localhost:9999/saved_file.extension
 // POST Method: Save binary file to home directory

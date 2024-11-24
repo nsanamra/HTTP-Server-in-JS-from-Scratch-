@@ -240,18 +240,17 @@ function handleGetMethod(socket, reqPath) {
                 return;
             }
 
-            fs.writeFile(targetFilePath, data, (err) => {
-                if (err) {
-                    console.error('File write error:', err);
-                    if (socket.writable) {
-                        sendResponse(socket, 500, "Error saving file");
-                    }
-                    return;
-                }
-                if (socket.writable) {
-                    sendResponse(socket, 200, `File successfully saved to ${targetFilePath}`);
-                }
-            });
+            //Send the file as a response
+            const responseHeaders = `HTTP/1.1 200 OK\r\n` +
+                `Content-Type: application/octet-stream\r\n` +
+                `Content-Disposition: attachment; filename="${path.basename(reqPath)}"\r\n` +
+                `Content-Length: ${data.length}\r\n` +
+                `Connection: close\r\n\r\n`;
+
+            // Write headers and file data to the socket
+            socket.write(responseHeaders);
+            socket.write(data);
+            sendResponse(socket, 200, `File successfully saved to ${targetFilePath}`);
         });
     } catch (error) {
         console.error('GET handling error:', error);

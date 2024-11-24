@@ -1,0 +1,2 @@
+For GET image curl http://192.168.32.108:9999/pic.png -o downloaded_file
+For POST image curl --data-binary @/home/victorkrait/get.txt 192.168.32.108:9999/get.txt
