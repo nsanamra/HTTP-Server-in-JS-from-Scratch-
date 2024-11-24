@@ -1,2 +1,5 @@
 For GET image curl http://192.168.32.108:9999/pic.png -o downloaded_file
-For POST image curl --data-binary @/home/victorkrait/get.txt 192.168.32.108:9999/get.txt
+For POST  curl -X POST -H "Content-Type: application/octet-stream" \
+     -H "Content-Length: $(stat -c%s /path/image.png)" \
+     --data-binary @image.png \
+     http://localhost:9999/path/image.png
